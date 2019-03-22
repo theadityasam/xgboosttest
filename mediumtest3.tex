@@ -1,0 +1,157 @@
+\documentclass[12pt]{extarticle}
+
+\usepackage[english]{babel}
+\usepackage{graphicx}
+%\usepackage{xcolor}
+\usepackage[svgnames]{xcolor}
+\usepackage{framed}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{enumerate}
+\usepackage[utf8]{inputenc}
+\usepackage[top=1 in,bottom=1in, left=1 in, right=1 in]{geometry}
+
+\usepackage{chngcntr}
+\counterwithin*{equation}{section}
+\counterwithin*{equation}{subsection}
+\renewcommand{\theequation}{\arabic{equation}}
+
+
+\usepackage{listings}
+\lstset{language=C++,
+                basicstyle=\ttfamily,
+                keywordstyle=\color{blue}\ttfamily,
+                stringstyle=\color{red}\ttfamily,
+                commentstyle=\color{green}\ttfamily,
+                morecomment=[l][\color{magenta}]{\#}
+}
+
+\newcommand{\infinity}{\rotatebox{90}{8}}
+\newcommand{\matlab}{{\sc Matlab} }
+\newcommand{\cvec}[1]{{\mathbf #1}}
+\newcommand{\rvec}[1]{\vec{\mathbf #1}}
+\newcommand{\ihat}{\hat{\textbf{\i}}}
+\newcommand{\jhat}{\hat{\textbf{\j}}}
+\newcommand{\khat}{\hat{\textbf{k}}}
+\newcommand{\minor}{{\rm minor}}
+\newcommand{\trace}{{\rm trace}}
+\newcommand{\spn}{{\rm Span}}
+\newcommand{\rem}{{\rm rem}}
+\newcommand{\ran}{{\rm range}}
+\newcommand{\range}{{\rm range}}
+\newcommand{\mdiv}{{\rm div}}
+\newcommand{\proj}{{\rm proj}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\<}{\langle}
+\renewcommand{\>}{\rangle}
+\renewcommand{\emptyset}{\varnothing}
+\newcommand{\attn}[1]{\textbf{#1}}
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem*{definition}{Definition}
+\newtheorem*{example}{Example}
+\newtheorem*{note}{Note}
+\newtheorem{exercise}{Exercise}
+\newcommand{\bproof}{\bigskip {\bf Proof. }}
+\newcommand{\eproof}{\hfill\qedsymbol}
+\newcommand{\Disp}{\displaystyle}
+\newcommand{\qe}{\hfill\(\bigtriangledown\)}
+\newcommand\perm[2][^n]{\prescript{#1\mkern-2.5mu}{}P_{#2}}
+\newcommand\comb[2][^n]{\prescript{#1\mkern-0.5mu}{}C_{#2}}
+\setlength{\columnseprule}{1 pt}
+
+
+\title{Medium Test 3 Solutions(GSOC with R(XGBoost))}
+\author{Aditya Samantaray}
+\date{\today}
+
+\begin{document}
+\maketitle
+\raggedright
+\subsection*{1. Explain why the first expression is equivalent to the second expression.}
+$Solution$:  $y_i$ can take on two discrete values i.e. 0 and 1, Hence $P(y_i|x_i)$ is defined as,
+\begin{equation}
+ P(y_i|x_i) = \begin{cases}
+               \frac{1}{1 + e^{- \hat{y_i}}}~~~~~~~~~ y_i=1\\
+               1-\frac{1}{1 + e^{- \hat{y_i}}} ~~~~ y_i=0
+            \end{cases}
+\label{eq1}\end{equation}
+Where $\hat{y_i}$ is a prediction score and ranges from $-\infinity$ to $\infinity$ for every $x_i$\\
+$\therefore$ We see that,
+\begin{equation}
+ P(y_i=1|x_i) = 1/{1+e^{-\hat{y_i}}}
+\end{equation}
+\begin{equation}
+ P(y_i=0|x_i) = 1 - 1/{1+e^{-\hat{y_i}}}
+\end{equation}
+The above two equations can be combined to give,
+\begin{equation}
+ P(y_i|x_i) = (\frac{1}{1+e^{-\hat{y_i}}})^{y_i}.(1 - \frac{1}{1+e^{-\hat{y_i}})^{1-y_i}})
+\label{eq2}\end{equation}
+Hence, we see that equation \eqref{eq1} is equivalent to \eqref{eq2}
+\newline\newline
+
+
+\subsection*{2. Explain how minimizing the loss function \fcolorbox{lightgray}{lightgray}{$loss(y_i, yhat_i$)} is equivalent to maximizing the probability \fcolorbox{lightgray}{lightgray}{$P(y_i | x_i)$}.}
+$Solution:$ Given,
+\begin{equation}
+ loss(y_i,\hat{y_i} = -\log(P(y_i|x_i))
+\end{equation}
+$P(y_i|x_i)$ is constrained between 0 and 1. As the value of $P(y_i|x_i)$ increases from 0 to 1, the value of $\log{(P(y_i|x_i))}$ also increases. Consequently, $-\log{(P(y_i|x_i))}$ decreases.\\Since our loss function is defined as $-\log{(P(y_i|x_i))}$, we can say that minimizing the loss function \fcolorbox{lightgray}{lightgray}{$loss(y_i, yhat_i$)} is equivalent to maximizing the probability \fcolorbox{lightgray}{lightgray}{$P(y_i | x_i)$}.
+\newline\newline
+
+\subsection*{3. Simplify the expression for $loss(y_i, yhat_i)$. Show your steps (i.e. don’t just write the answer, show how you got it).}
+$Solution:$ 
+\begin{align*}
+ loss(y_i,\hat{y_i}) &= -\log{((\frac{1}{1+e^{\hat{y_i}}})^{y_i} \times (1-\frac{1}{1+e^{\hat{y_i}}})^{1-y_i})}\\
+ &= -\log{((\frac{1}{1+e^{\hat{y_i}}})^{y_i} \times (\frac{e^{-\hat{y_i}}}{1+e^{\hat{y_i}}})^{1-y_i})}\\
+ &= y_i\log{(1+e^{-\hat{y_i}})} - (1-y_i)\log{e^{-\hat{y_i}}} + (1-y_i)\log{(1+e^{-\hat{y_i}})}\\
+ &= (y_i+(1-y_i))\log{(1+e^{\hat{y_i}})} - (1-y_i)(-\hat{y_i})
+\end{align*}
+\begin{equation}
+ \therefore loss(y_i,\hat{y_i}) = \hat{y_i} - {y_i}{\hat{y_i}} + \log{(1+e^{-\hat{y_i}})}
+\label{eq3}\end{equation}
+\newline\newline
+
+\subsection*{4.  Now compute the first and second partial derivatives of $loss(y_i, yhat_i)$ with respect to the second variable $yhat_i$. Then express the two derivatives in terms of $sigmoid(yhat_i)$. Notice how simple the expressions become. Again, show your steps (i.e. don’t just write the answer, show how you got it).}
+$Solution:$ From \eqref{eq3}, the loss funtion can be given as
+\centerline{$loss(y_i,\hat{y_i}) = \hat{y_i} - {y_i}{\hat{y_i}} + \log{(1+e^{-\hat{y_i}})}$}\\
+Now, calculating the first partial derivative w.r.t. $\hat y_i$
+\begin{align*}
+ \frac{\partial{(loss(y_i,\hat{y_i}))}}{\partial{\hat{y_i}}} &= -\frac{e^{-\hat y_i}}{1+e^{-\hat y_i}} - y_i +1
+ \\&= -(1 - \frac{1}{1+e^{-\hat y_i}}) - y_i + 1
+ \\&= -(1 - sigmoid({\hat y_i}) - y_i +1
+\end{align*}
+\begin{equation}
+ \therefore \frac{\partial{(loss(y_i,\hat{y_i}))}}{\partial{\hat{y_i}}} = sigmoid(\hat y_i) - y_i
+\label{eq4}\end{equation}
+Calculating the second partial derivative w.r.t. $\hat y_i$
+\begin{align*}
+ \frac{\partial{(loss(y_i,\hat{y_i}))}}{\partial{\hat{y_i}}} &= \frac{1}{1+e^{-\hat y_i}} - y_i\\
+ \frac{\partial^{2}{(loss(y_i,\hat{y_i}))}}{\partial{\hat{y_i}}^{2}} &= (\frac{e^{-\hat y_i}}{(1+e^{-\hat y_i})^2})(\frac{1}{1+e^{-\hat y_i}})
+\end{align*}
+\begin{equation}
+ \therefore \frac{\partial^{2}{(loss(y_i,\hat{y_i}))}}{\partial{\hat{y_i}}^{2}} = (1 - sigmoid({\hat y_i})) \times (sigmoid(\hat y_i))
+\label{eq5}\end{equation}
+Hence we see in \eqref{eq4} and \eqref{eq5} that the partial derivatives do reduce to simple expressions.
+\newline\newline
+
+\subsection*{5.  In the source code $src/objective/regression_loss.h$, locate the structure that implements this loss function.}
+$Solution:$ \eqref{eq3} is implemented in the following code present at the 72nd line of code.
+\begin{lstlisting}
+// logistic loss for binary classification task
+struct LogisticClassification : public LogisticRegression {
+  static const char* DefaultEvalMetric() { return "error"; }
+}; 
+\end{lstlisting}
+
+
+
+\end{document}

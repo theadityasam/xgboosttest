@@ -1,0 +1,63 @@
+---
+title: "Easy Test 1 for xgboost"
+author: "Aditya Samantaray"
+date: "20/3/2019"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+# Easy Test 1 for xgboost
+
+We'll try to fit a model using xgboost function for the "Insurance" dataset. We'll try to predict the ratio of insurance claims per holder using poisson regression.  
+
+## Loading the packages
+```{r loading}
+library("xgboost")
+library(directlabels)
+library(data.table)
+library("Matrix")
+library(caret)
+data("Insurance", package = "MASS")
+Insurance$freq<-with(Insurance, (Claims/Holders) ) #Creating a label frequency
+head(Insurance)
+train.X <- Insurance[-c(4,5)]
+train.X <- sparse.model.matrix(freq~., Insurance)
+train.Y <- Insurance$freq
+```
+  
+## Plotting the frequency data(Number of claims/Number of holders for each datapoint)
+```{r plot}
+ggplot(Insurance, aes(x = freq))+
+  geom_density(alpha = 0.2, fill="#FF7777")+
+  ggtitle("Frequency Distribution")
+```
+We see that the plot produced resembles a poisson distribution. Hence we can perform poisson regression  
+
+## Performing 5 fold CV
+```{r cv}
+param <- list(  objective   = "count:poisson", #Setting the objective parameter to count:poisson
+                eta         = 1,
+                max.depth   = 3,
+                nthread     = 2
+)
+fit <- xgb.cv(params = param, data = train.X, label = train.Y, nfold = 5, nrounds = 5, showsd = F, prediction = T)
+pred <- round(fit$pred)
+error <- (pred - train.Y)^2
+#Baseline error calculation
+errbaseline <- (sum(abs(replace(train.Y, c(1:64), mean(train.Y)) - train.Y)))/length(train.Y)
+```
+  
+## Plotting the results
+```{r final}
+df <- data.frame("ID" = factor(rep(1:2, each = 64)), "TestError" = c(error, rep(errbaseline, each = 64))*100)
+df$ID <- ifelse(df$ID == 1, "Model", "Baseline") #ID 1 for prediction, ID 2  for baseline
+
+#Plotting
+p <- ggplot(df, aes(x = c(rep(1:64, 2)), y = TestError, colour = ID))+
+  geom_line()+
+  ggtitle('Model Error over Baseline') +
+  xlab('Data Points') +
+  ylab('Test Error (in %)')
+direct.label(p, "angled.boxes")
+```

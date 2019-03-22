@@ -1,0 +1,38 @@
+---
+title: "easytest3"
+author: "Aditya Samantaray"
+date: "20/3/2019"
+output: html_document
+---
+# Easy Test 3 for xgboost loss functions
+## Loading the agaricus dataset
+```{r load}
+require(xgboost)
+
+data(agaricus.train, package='xgboost')
+data(agaricus.test, package='xgboost')
+dtrain <- xgb.DMatrix(agaricus.train$data, label = agaricus.train$label)
+dtest <- xgb.DMatrix(agaricus.test$data, label = agaricus.test$label)
+watchlist <- list(eval = dtest, train = dtrain)
+num_round <- 6
+
+```
+  
+## The customized objective function :
+```{r obj}
+logregobj <- function(preds, dtrain) {
+  y <- getinfo(dtrain, "label")
+  yhat <- preds
+  grad = ifelse(yhat > y, 0.5 * (yhat - y), -2 * (y - yhat))
+  hess = ifelse(yhat > y, 0.5, 2)
+  return(list(grad = grad, hess = hess))
+}
+```
+  
+## Training
+```{r train}
+param <- list(max_depth=2, eta=1, nthread = 2, verbosity=0, 
+              objective=logregobj) #RMSE is chosen as evaluation metric by default
+print ('start training with user customized objective')
+bst <- xgb.train(param, dtrain, num_round, watchlist)
+```

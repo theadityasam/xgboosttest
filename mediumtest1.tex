@@ -1,0 +1,98 @@
+\documentclass[12pt]{extarticle}
+
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[top=1 in,bottom=1in, left=1 in, right=1 in]{geometry}
+
+\newcommand{\ihat}{\hat{\textbf{\i}}}
+\newcommand{\jhat}{\hat{\textbf{\j}}}
+\newcommand{\khat}{\hat{\textbf{k}}}
+\newcommand{\minor}{{\rm minor}}
+\newcommand{\trace}{{\rm trace}}
+\newcommand{\spn}{{\rm Span}}
+\newcommand{\rem}{{\rm rem}}
+\newcommand{\ran}{{\rm range}}
+\newcommand{\range}{{\rm range}}
+\newcommand{\mdiv}{{\rm div}}
+\newcommand{\proj}{{\rm proj}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\<}{\langle}
+\renewcommand{\>}{\rangle}
+\renewcommand{\emptyset}{\varnothing}
+\newcommand{\attn}[1]{\textbf{#1}}
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem*{definition}{Definition}
+\newtheorem*{example}{Example}
+\newtheorem*{note}{Note}
+\newtheorem{exercise}{Exercise}
+\newcommand{\bproof}{\bigskip {\bf Proof. }}
+\newcommand{\eproof}{\hfill\qedsymbol}
+\newcommand{\Disp}{\displaystyle}
+\newcommand{\qe}{\hfill\(\bigtriangledown\)}
+\newcommand\perm[2][^n]{\prescript{#1\mkern-2.5mu}{}P_{#2}}
+\newcommand\comb[2][^n]{\prescript{#1\mkern-0.5mu}{}C_{#2}}
+\setlength{\columnseprule}{1 pt}
+
+
+\title{Implementing Binomial Loss in XGBoost}
+\author{Aditya Samantaray}
+\date{\today}
+
+\begin{document}
+\maketitle
+\raggedright
+The binomial distribution is a finite discrete distribution and arises in situations
+where one is observing a sequence of Bernoulli trials. The density function of a binomial distribution is defined as
+
+\begin{equation} 
+f(y,N,p) = \comb[N]{y}p^y(1-p)^{N-y}
+\label{eq1}\end{equation}
+\\where, $N$ represents the number of trials and $p$ represents the success in each trial. $f(y,N,p)$ represents the probability of exactly $y$ successes out of $N$ trials
+\newline
+\newline
+
+Using the maximum likelihood estimation, the likelihood for \eqref{eq1} becomes
+\begin{equation} 
+L(p,y,N) = \comb[N]{y}p^y.(1-p)^{N-y}
+\label{eq2}\end{equation}
+In maximum likelihood estimation, we try to maximize $\comb[N]{y}p^y(1-p)^{N-y}$, but maximizing it is the same as maximizing $p^y(1-p)^{N-y}$. Hence our likelihood function can be rewritten as
+
+\begin{equation} 
+L(p,y,N) = p^y.(1-p)^{N-y}
+\label{eq3}\end{equation}
+%Also, $y = \sum_{i=1}^N y_i$, where $y_i$ is a single data point at $i^{th}$ trial
+
+%\begin{align*} 
+%L(p,y,N) &= p^{\sum_{i=1}^N y_i}.(1-p)^{N-\sum_{i=1}^N y_i}\\
+%&= p^{\sum_{i=1}^N y_i}.(1-p)^{\sum_{i=1}^N (1-y_i)}
+%\end{align*}
+
+%\begin{equation} 
+%\therefore L(p,y,N) = \prod_{i=1}^N p^{y_i}.(1-p)^{1-y_i}
+%\label{eq4}\end{equation}
+
+Now,\\
+For our loss function, we take the negative logarithm of the likelihood obtained in \eqref{eq3}
+\begin{equation} 
+loss(y_i) = -\log_{e}(p^{y_i}.(1-p)^{1-y_i})
+\label{eq:5}\end{equation}
+\begin{equation} 
+\therefore loss(y_i) = -(y_i\log_{e}p + (1-y_i)\log_{e}(1-p))
+\label{eq:6}\end{equation}
+
+We see that the loss function obtained is similar to the logistic loss function. Hence we can implement binomial loss by setting the \fcolorbox{lightgray}{lightgray}{objective} parameter to \fcolorbox{lightgray}{lightgray}{$binary.logistic$} within the parameter list
+
+\end{document}
+
+
+
